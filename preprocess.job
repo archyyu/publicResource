@@ -1,0 +1,62 @@
+#!/bin/sh
+#SBATCH --nodes 1    # how many nodes are required (in most cases it is 1)
+#SBATCH -J preprocess   # arbitrary name for the job (you choose)
+#SBATCH -t 2:00:00    # maximum execution time, (optional)
+#SBATCH -p compute
+#SBATCH --gres=gpu:1
+#SBATCH --mail-user=jiangpeng.yu3@mail.dcu.ie
+#SBATCH --mail-type=END
+
+DATA_DIR=/home/jyu/toy-ende/data/toy-ende
+OUT_DIR=/home/jyu/toy-ende/data/toy-ende/preprocessed/
+
+
+all_file_list="train dev test"
+train_file_list="train"
+dev_test_file_list="dev test"
+
+SRC=en
+TGT=de
+TRAIN_PRE=train
+
+#NORMALIZATION
+echo normalising...
+for file in $all_file_list;do
+        sacremoses -l ${SRC} -j 4 normalize < ${DATA_DIR}/${file}.${SRC} > ${OUT_DIR}/${file}.nor.${SRC}
+        sacremoses -l ${TGT} -j 4 normalize < ${DATA_DIR}/${file}.${TGT} > ${OUT_DIR}/${file}.nor.${TGT}
+done
+
+#FILTER
+echo filtering training files.....
+for file in $train_file_list;do
+        python ./filter.py --data_dir ${OUT_DIR} --output_dir $OUT_DIR --corpus_name ${file}.nor --src ${SRC} --tgt ${TGT}
+done
+
+#TOKENIZATION
+echo tokenising training files.....
+for file in $train_file_list;do
+        sacremoses -l ${SRC} -j 4 tokenize  < ${OUT_DIR}/${file}.nor.filtered.${SRC} > ${OUT_DIR}/${file}.tok.${SRC}
+        sacremoses -l ${TGT} -j 4 tokenize  < ${OUT_DIR}/${file}.nor.filtered.${TGT} > ${OUT_DIR}/${file}.tok.${TGT}
+done
+
+echo tokenising dev and test files.....
+for file in $dev_test_file_list;do
+        sacremoses -l ${SRC} -j 4 tokenize  < ${OUT_DIR}/${file}.nor.${SRC} > ${OUT_DIR}/${file}.tok.${SRC}
+        sacremoses -l ${TGT} -j 4 tokenize  < ${OUT_DIR}/${file}.nor.${TGT} > ${OUT_DIR}/${file}.tok.${TGT}
+done
+
+#BPE
+echo training bpe from train files...
+subword-nmt learn-bpe -s 32000 < ${OUT_DIR}/${TRAIN_PRE}.tok.${SRC} > ${OUT_DIR}/bpe_wiki${SRC}.model
+subword-nmt learn-bpe -s 32000 < ${OUT_DIR}/${TRAIN_PRE}.tok.${TGT} > ${OUT_DIR}/bpe_wiki${TGT}.model
+
+echo applying bpe to  train files...
+subword-nmt apply-bpe -c ${OUT_DIR}/bpe_wiki${SRC}.model < ${OUT_DIR}/${TRAIN_PRE}.tok.${SRC} > ${OUT_DIR}/${TRAIN_PRE}.bpe.${SRC}
+subword-nmt apply-bpe -c ${OUT_DIR}/bpe_wiki${TGT}.model < ${OUT_DIR}/${TRAIN_PRE}.tok.${TGT} > ${OUT_DIR}/${TRAIN_PRE}.bpe.${TGT}
+
+
+echo appying bpe to dev and test files....
+for file in $dev_test_file_list;do
+        subword-nmt apply-bpe -c ${OUT_DIR}/bpe_wiki${SRC}.model  < ${OUT_DIR}/${file}.tok.${SRC} > ${OUT_DIR}/${file}.bpe.${SRC}
+        subword-nmt apply-bpe -c ${OUT_DIR}/bpe_wiki${TGT}.model  < ${OUT_DIR}/${file}.tok.${TGT} > ${OUT_DIR}/${file}.bpe.${TGT}
+done
