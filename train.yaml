@@ -1,0 +1,89 @@
+# Config for MT training
+#
+save_data: /home/akandimalla/practicum2/models/en_hi
+  #
+# Corpus opts:
+data:
+    train:
+        path_src: /home/akandimalla/practicum2/data/en_hi/preProcessedwiki/wikimatrix-en-hi.bpe.en
+        path_tgt: /home/akandimalla/practicum2/data/en_hi/preProcessedwiki/wikimatrix-en-hi.bpe.hi
+    valid:
+        path_src: /home/akandimalla/practicum2/data/en_hi/preProcessedwiki/dev.bpe.en
+        path_tgt: /home/akandimalla/practicum2/data/en_hi/preProcessedwiki/dev.bpe.hi
+
+subword_nbest: 1
+subword_alpha: 0.0
+#### Filter
+src_seq_length: 150
+tgt_seq_length: 150
+
+# silently ignore empty lines in the data
+skip_empty_level: silent
+
+
+# # Vocab opts
+# ### vocab:
+src_vocab: /home/akandimalla/practicum2/data/en_hi/preProcessedwiki/vocab_wiki.en
+tgt_vocab: /home/akandimalla/practicum2/data/en_hi/preProcessedwiki/vocab_wiki.hi
+src_vocab_size: ******
+tgt_vocab_size: ******
+vocab_size_multiple: 8
+src_words_min_frequency: 1
+tgt_words_min_frequency: 1
+#share_vocab: True
+
+# # Model training parameters
+
+# General opts
+save_model: /home/akandimalla/practicum2/models/en_hi/wiki_en_hi
+keep_checkpoint: 60
+save_checkpoint_steps: 10000
+average_decay: 0.0005
+seed: 1234
+report_every: 100
+train_steps: 150000
+valid_steps: 10000
+
+# Batching
+queue_size: 1024
+bucket_size: 32768
+pool_factor: 8192
+world_size: 1
+gpu_ranks: [0]
+batch_type: "tokens"
+batch_size: 3072
+valid_batch_size: 5120
+batch_size_multiple: 1
+max_generator_batches: 0
+accum_count: [2]
+accum_steps: [0]
+
+# Optimization
+model_dtype: "fp32"
+optim: "adam"
+learning_rate: 2.0
+warmup_steps: 6000
+decay_method: "noam"
+adam_beta1: 0.9
+adam_beta2: 0.98
+max_grad_norm: 0
+label_smoothing: 0.1
+param_init: 0
+param_init_glorot: true
+normalization: "tokens"
+
+# Model
+encoder_type: transformer
+decoder_type: transformer
+enc_layers: 6
+dec_layers: 6
+heads: 8
+rnn_size: 512
+word_vec_size: 512
+transformer_ff: 2048
+dropout_steps: [0]
+dropout: [0.1]
+attention_dropout: [0.1]
+#share_decoder_embeddings: true
+#share_embeddings: true
+position_encoding: true
