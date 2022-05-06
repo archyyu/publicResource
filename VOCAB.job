@@ -1,0 +1,17 @@
+#!/bin/sh
+#SBATCH --nodes 1    # how many nodes are required (in most cases it is 1)
+#SBATCH -J BV   # arbitrary name for the job (you choose)
+#SBATCH -t 1:00:00    # maximum execution time, (optional)
+#SBATCH -p compute
+#SBATCH --gres=gpu:1
+#SBATCH --mail-user=kumar.maji2@mail.dcu.ie
+#SBATCH --mail-type=END
+
+
+
+
+confFile=build_vocab.yaml
+
+
+onmt_build_vocab -config $confFile 
+#-n_sample 32000
