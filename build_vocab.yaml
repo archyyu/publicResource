@@ -1,0 +1,32 @@
+# Configuration file for vocabulary building
+save_data: /home/akandimalla/practicum2/data/en_hi/preProcessed
+
+
+# Corpus opts:
+data:
+    train:
+        path_src: /home/akandimalla/practicum2/data/en_hi/preProcessed/wikimatrix-en-hi.bpe.en
+        path_tgt: /home/akandimalla/practicum2/data/en_hi/preProcessed/wikimatrix-en-hi.bpe.hi
+
+
+subword_nbest: 1
+subword_alpha: 0.0
+##### Filter
+src_seq_length: 150
+tgt_seq_length: 150
+##
+### silently ignore empty lines in the data
+skip_empty_level: silent
+##
+##
+### # Vocab opts
+### ### vocab:
+src_vocab: /home/akandimalla/practicum2/data/en_hi/preProcessed/vocab_wiki.en
+tgt_vocab: /home/akandimalla/practicum2/data/en_hi/preProcessed/vocab_wiki.hi
+src_vocab_size: 32000
+tgt_vocab_size: 32000
+vocab_size_multiple: 8
+src_words_min_frequency: 1
+tgt_words_min_frequency: 1
+#share_vocab: True
+n_sample: -1
