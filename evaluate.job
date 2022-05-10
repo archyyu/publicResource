@@ -1,0 +1,33 @@
+#!/bin/sh
+#SBATCH -n 1    # how many nodes are required (in most cases it is 1)
+#SBATCH -t 5:00:00    # maximum execution time
+#SBATCH -p compute    # which partition to run on ('compute' is default)
+#SBATCH -J eval    # arbitrary name for the job (you choose)
+
+# load modules if needed (modules are used in the Boole cluster only)
+#module load staskfarm
+# check which modules are available
+#module av
+
+# uncomment the following to get a log of memory usage
+# vmstat -S M {interval_secs} >> memory_usage_$SLURM_JOBID.log &
+
+
+# your commands here
+
+projectDir=/home/akandimalla/practicum2
+evalTool=$projectDir/multeval
+hypDir=$projectDir/output
+outDir=$projectDir/evaluation
+refDir=$projectDir/data/en_hi/preProcessedwiki
+ref=test.bpe.hi
+
+
+
+cd $evalDir
+
+for hypPath in $hypDir/*; do
+        hypName=${hypPath##*/}
+        echo evaluating file $hypName ....
+        ./multeval.sh eval --refs $refDir/$ref --hyps-baseline $hypDir/$hypName --meteor.language en > $outDir/$hypName.eval
+done
