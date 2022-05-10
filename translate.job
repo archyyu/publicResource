@@ -1,0 +1,29 @@
+#!/bin/sh
+#SBATCH --nodes 1    # how many nodes are required (in most cases it is 1)
+#SBATCH -J trans   # arbitrary name for the job (you choose)
+#SBATCH -t 2:00:00    # maximum execution time, (optional)
+#SBATCH -p compute
+#SBATCH --gres=gpu:1
+##SBATCH --cpus-per-task=4    # tell Slurm how many CPU cores you need, if different from default; your job won't be able to use more than this
+##SBATCH --gres=gpu:rtx2080ti:1
+
+
+
+# your commands here
+
+
+#Path delcaration
+#echo My job has started running...
+projectDir=/home/akandimalla/practicum2
+modelDir=$projectDir/models/en_hi
+testDir=$projectDir/data/en_hi/preProcessedwiki
+outDir=$projectDir/output
+test_file=test.bpe.en
+
+for model in $modelDir/*; do
+        modelName=${model##*/}
+        echo translating $test_file by model $modelName ....
+        onmt_translate -model $modelDir/$modelName -src $testDir/$test_file -output $outDir/$test_file.transBy$modelName -gpu 0 -verbose
+        sed -r 's/(@@ )|(@@ ?$)//g' $outDir/$test_file.transBy$modelName > $outDir/$test_file.transBy$modelName.restored
+        rm $outDir/$test_file.transBy$modelName
+done
